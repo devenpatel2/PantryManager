@@ -8,3 +8,17 @@ application.windows32
 application.windows64
 application.macosx
 out
+
+# Arduino
+*.elf
+*.map
+*.bin
+
+# Python
+__pycache__
+
+# Vim
+*.swp
+
+# Database
+*.db

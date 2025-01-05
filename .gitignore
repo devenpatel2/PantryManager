@@ -1,0 +1,13 @@
+# Arduino
+*.elf
+*.map
+*.bin
+
+# Python
+__pycache__
+
+# Vim
+*.swp
+
+# Database
+*.db

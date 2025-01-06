@@ -12,14 +12,10 @@
 bool buttonUpPressed = false;
 bool buttonDownPressed = false;
 
-// Reference to the DisplayManager instance
-// extern DisplayManager display;
-
-void handleButtons(DisplayManager display, ItemManager itemManager) {
+void handleButtons(DisplayManager& display, ItemManager& itemManager) {
     // Scroll up
     if (digitalRead(BUTTON_UP_PIN) == LOW && !buttonUpPressed) {
         buttonUpPressed = true;
-
         if (display.canScrollUp()) {
             display.scrollUp();
             display.drawUI(itemManager.getSortedItems());
@@ -35,6 +31,7 @@ void handleButtons(DisplayManager display, ItemManager itemManager) {
         if (display.canScrollDown(itemManager.getItems().size())) {
             display.scrollDown();
             display.drawUI(itemManager.getSortedItems());
+
         }
     } else if (digitalRead(BUTTON_DOWN_PIN) == HIGH) {
         buttonDownPressed = false;

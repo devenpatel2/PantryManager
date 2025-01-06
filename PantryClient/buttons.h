@@ -3,6 +3,6 @@
 #include "display.h"
 #include "itemManager.h"
 
-void handleButtons(DisplayManager display, ItemManager itemManager);
+void handleButtons(DisplayManager& display, ItemManager& itemManager);
 
 #endif

@@ -25,8 +25,8 @@ DisplayManager displayManager(TFT_CS, TFT_DC, TFT_RST);
 void setup() {
   // Initialize Serial
   Serial.begin(9600);
-  displayManager.init();;
   // Initialize Display
+  displayManager.init();
 
   // Initialize Buttons
   pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
@@ -37,7 +37,6 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
   }
-
   // Setup MQTT
   mqttInit();
 }
@@ -45,7 +44,6 @@ void setup() {
 void loop() {
   // Handle MQTT communication
   mqttLoop();
-
   // Handle button input
   handleButtons(displayManager, itemManager);
 }

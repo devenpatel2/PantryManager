@@ -11,11 +11,21 @@ items:
   status: 2
 - name: Coriander
   status: 2
-    # - name: Herbs
-    #   status: 0
-    # - name: Pepper
-    #   status: 0
-    # - name: Salt
-    #   status: 0
-    # - name: Sugar
-    #   status: 0
+- name: Herbs
+  status: 0
+- name: Pepper
+  status: 0
+- name: Salt
+  status: 0
+- name: Sugar
+  status: 0
+- name: Butter 
+  status: 0
+- name: Cream
+  status: 0
+- name: Tea
+  status: 1
+- name: Garlic 
+  status: 0
+- name: Ginger
+  status: 1

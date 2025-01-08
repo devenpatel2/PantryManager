@@ -4,7 +4,11 @@ import sqlite3
 from aiomqtt import Client
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
+from typing import Optional
+import time
 import yaml
+
+import helper
 
 app = FastAPI()
 
@@ -12,18 +16,25 @@ app = FastAPI()
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 TOPIC_PUBLISH = "/pantry/items"
+TOPIC_REQUEST = "/pantry/request"
 DATABASE = "items.db"
 
 # MQTT Client
 mqtt_client = Client(MQTT_BROKER, MQTT_PORT)
+task = None
 
-# Item model
-class Item(BaseModel):
-    name: str
-    status: int  # 0 = In Stock, 1 = Out of Stock, 2 = Surplus
+# Data Models
+class BulkMessage(BaseModel):
+    op: str  # Must be "bulk"
+    items: dict[str, int]
+    timestamp: int
 
+class SingleItemMessage(BaseModel):
+    item: str
+    status: Optional[int]  # null for removal
+    op: str  # "add", "update", or "remove"
+    timestamp: int
 
-# SQLite Helper Functions
 async def init_db():
     """Initialize the database and populate with initial data."""
     conn = sqlite3.connect(DATABASE)
@@ -66,7 +77,6 @@ async def init_db():
         conn.commit()
     conn.close()
 
-
 async def get_all_items():
     """Retrieve all items from the database."""
     conn = sqlite3.connect(DATABASE)
@@ -74,53 +84,98 @@ async def get_all_items():
     c.execute("SELECT name, status FROM items")
     items = c.fetchall()
     conn.close()
-    items_list = [{"name": name, "status": status} for name, status in items]
+    items_dict = {name: status for name, status in items}
+    return items_dict
 
-    # Sort the items:
-    # 1. Out-of-stock (status == 1) first
-    # 2. Alphabetically by name within each group
-    sorted_items = sorted(items_list, key=lambda x: (x["status"] != 1, x["name"].lower()))
-    return items_list
-
-
-# MQTT Publishing
-async def publish_items():
-    """Publish the list of items to the MQTT topic."""
-    items = await get_all_items()
-    payload = {"items": items}
-    await mqtt_client.publish(TOPIC_PUBLISH, json.dumps(payload), retain=True)
+async def publish_message(payload: dict):
+    """Publish a message to the MQTT topic."""
+    await mqtt_client.publish(TOPIC_PUBLISH, json.dumps(payload))
     await asyncio.sleep(1)
 
+async def publish_bulk():
+    # Initial bulk publish
+    items = await get_all_items()
+    timestamp = int(time.time())
+    chunks = helper.split_into_chunks(items, timestamp, 220)
+    # Publish the bulk update to MQTT
+    for chunk in chunks:
+        await publish_message(chunk)
 
+
+async def mqtt_listener_callback(client):
+    
+   #  async with client.messages() as messages:
+    await client.subscribe(TOPIC_REQUEST)
+    async for message in client.messages:
+        data = json.loads(message.payload.decode())
+        if data.get("op") == "request":
+            await publish_bulk()
+
+
+# FastAPI Routes
 @app.on_event("startup")
 async def on_startup():
     """Startup tasks: Initialize DB and connect to MQTT."""
     await init_db()
-    async with mqtt_client:
-        await publish_items()
+    await mqtt_client.__aenter__()
+    await publish_bulk()
+    #loop = asyncio.get_event_loop()
+    global task
+    task = asyncio.create_task(mqtt_listener_callback(mqtt_client))
 
-
-#@app.on_event("shutdown")
-#async def on_shutdown():
-#    """Shutdown tasks: Disconnect MQTT."""
-#    await mqtt_client.disconnect()
-
-
-@app.get("/items")
-async def get_items():
-    """API endpoint to retrieve all items."""
-    return {"items": await get_all_items()}
+@app.on_event("shutdown")
+async def shutdown_event():
+    if task:
+        task.cancel()
+    await mqtt_client.__aexit__(None, None, None)
 
 
 @app.post("/items")
-async def add_item(item: Item, background_tasks: BackgroundTasks):
-    """Add an item to the database and publish updated list."""
+async def handle_item(data: SingleItemMessage, background_tasks: BackgroundTasks):
+    """Handle add/update/remove operations for a single item."""
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    c.execute("INSERT INTO items (name, status) VALUES (?, ?)", (item.name, item.status))
+
+    if data.op == "add" or data.op == "update":
+        c.execute("INSERT OR REPLACE INTO items (name, status) VALUES (?, ?)", (data.item, data.status))
+    elif data.op == "remove":
+        c.execute("DELETE FROM items WHERE name = ?", (data.item,))
+   
     conn.commit()
     conn.close()
 
-    # Publish updated list in the background
-    background_tasks.add_task(publish_items)
-    return {"message": "Item added successfully"}
+    # Publish the update to MQTT
+    payload = {
+        "item": data.item,
+        "status": data.status,
+        "op": data.op,
+        "timestamp": data.timestamp
+    }
+    background_tasks.add_task(publish_message, payload)
+
+    return {"message": f"Item {data.op} operation successful"}
+
+@app.post("/bulk")
+async def handle_bulk(data: BulkMessage, background_tasks: BackgroundTasks):
+    """Handle bulk updates."""
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+
+    # Replace all items in the database
+    c.execute("DELETE FROM items")
+    for name, status in data.items.items():
+        c.execute("INSERT INTO items (name, status) VALUES (?, ?)", (name, status))
+    
+    conn.commit()
+    conn.close()
+
+    # Split the items dictionary into chunks if needed
+    items = data.items
+    timestamp = data.timestamp
+    chunks = helper.split_into_chunks(items, timestamp, 50)
+    # Publish the bulk update to MQTT
+    for chunk in chunks:
+        background_tasks.add_task(publish_message, chunk)
+
+
+    return {"message": "Bulk update successful"}

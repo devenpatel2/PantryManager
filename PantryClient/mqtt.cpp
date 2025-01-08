@@ -7,7 +7,8 @@
 #include "itemManager.h"
 // MQTT Configuration
 #define MQTT_PORT 1883
-#define MQTT_TOPIC "/pantry/items"
+#define MQTT_ITEMS_TOPIC "/pantry/items"
+#define MQTT_REQUEST_TOPIC "/pantry/request"
 const char* mqtt_server = "pi3-wifi";
 
 // MQTT Client
@@ -32,13 +33,16 @@ void mqttInit() {
   client.setCallback(mqttCallback);
   while (!client.connected()) {
     if (client.connect("NodeMCUClient")) {
-      client.subscribe(MQTT_TOPIC);
+      client.subscribe(MQTT_ITEMS_TOPIC);
       Serial.println("Connected to broker");
     } else {
       Serial.println("Failed to connect to broker, retrying...");
       delay(5000);
     }
   }
+  Serial.println("Sending request for all items...");
+  String payload = "{\"op\":\"request\"}";
+  client.publish(MQTT_REQUEST_TOPIC, payload.c_str());
 }
 
 void mqttLoop() {

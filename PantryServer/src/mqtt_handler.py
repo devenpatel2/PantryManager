@@ -1,7 +1,7 @@
 import asyncio
 import json
 import time
-from aiomqtt import Client
+from aiomqtt import Client, MqttError
 from .helper import split_into_chunks
 
 MQTT_BROKER = "localhost"
@@ -45,7 +45,11 @@ class MQTTManager:
     async def subscribe_to_request(self):
         """Subscribe to the request topic and handle bulk requests."""
         await self.client.subscribe(TOPIC_REQUEST)
-        async for message in self.client.messages:
-            data = json.loads(message.payload.decode())
-            if data.get("op") == "request":
-                await self.publish_bulk()
+        try:
+            async for message in self.client.messages:
+                data = json.loads(message.payload.decode())
+                if data.get("op") == "request":
+                    await self.publish_bulk()
+        except MqttError:
+            pass
+            

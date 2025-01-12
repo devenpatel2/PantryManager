@@ -19,7 +19,7 @@ LONGITUDE=11.476975
 db_manager = DatabaseManager(DB_PATH)
 mqtt_manager = MQTTManager(db_manager)
 weather_handler = WeatherHandler(API_URL, LATITUDE, LONGITUDE)
-
+tasks = []
 
 @app.on_event("startup")
 async def startup():
@@ -30,12 +30,18 @@ async def startup():
     await mqtt_manager.connect()
     await mqtt_manager.publish_bulk()
     await weather_handler.fetch_weather()
-    asyncio.create_task(schedule_weather_updates())
-    asyncio.create_task(mqtt_manager.subscribe_to_request())
+    tasks.append(asyncio.create_task(schedule_weather_updates()))
+    tasks.append(asyncio.create_task(mqtt_manager.subscribe_to_request()))
 
 @app.on_event("shutdown")
 async def shutdown():
     await mqtt_manager.disconnect()
+    for task in tasks:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
 
 async def schedule_weather_updates():
     """Fetch and publish weather updates periodically."""

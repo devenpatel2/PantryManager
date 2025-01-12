@@ -6,8 +6,9 @@ from .helper import split_into_chunks
 
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
-TOPIC_PUBLISH = "/pantry/items"
+TOPIC_ITEMS = "/pantry/items"
 TOPIC_REQUEST = "/pantry/request"
+TOPIC_WEATHER = "/pantry/weather"
 
 class MQTTManager:
     def __init__(self, db_manager):
@@ -22,9 +23,14 @@ class MQTTManager:
         """Disconnect from the MQTT broker."""
         await self.client.__aexit__(None, None, None)
 
+    async def publish_weather(self, weather_data):
+        """Publish weather data to the weather topic."""
+        payload = {"op": "weather", "data": weather_data, "timestamp": int(time.time())}
+        await self.client.publish(TOPIC_WEATHER, json.dumps(payload))
+
     async def publish_message(self, payload: dict):
         """Publish a message to the MQTT topic."""
-        await self.client.publish(TOPIC_PUBLISH, json.dumps(payload))
+        await self.client.publish(TOPIC_ITEMS, json.dumps(payload))
         await asyncio.sleep(0.1)
 
     async def publish_bulk(self):

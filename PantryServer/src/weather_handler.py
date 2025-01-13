@@ -5,7 +5,7 @@ import time
 
 logging.basicConfig(level=logging.INFO)
 class WeatherHandler:
-    def __init__(self, api_url, latitude, longitude, update_interval=10):
+    def __init__(self, api_url, latitude, longitude, update_interval=900):
         """
         Initialize the WeatherHandler.
 
@@ -19,7 +19,6 @@ class WeatherHandler:
         self.longitude = longitude
         self.update_interval = update_interval
         self.cached_weather = None
-        self.last_update_time = 0
 
     async def fetch_weather(self):
         """
@@ -39,7 +38,6 @@ class WeatherHandler:
                     if response.status == 200:
                         data = await response.json()
                         self.cached_weather = self.parse_weather_data(data)
-                        self.last_update_time = int(time.time())
                         logging.debug("Weather data updated successfully.")
                     else:
                         logging.error(f"Failed to fetch weather data. HTTP Status: {response.status}")
@@ -62,7 +60,8 @@ class WeatherHandler:
                 "temperature": current_weather.get("temperature"),
                 "precipitation": hourly.get("precipitation", [None])[0],
                 "warning": None,  # Placeholder for future severe weather warnings
-                "timestamp": self.last_update_time
+                "time": time.strftime("%H:%M:%S"),
+                "date": time.strftime("%d/%m")
             }
 
             return weather
@@ -76,6 +75,11 @@ class WeatherHandler:
 
         :return: Cached weather data as a dictionary
         """
+        self.cached_weather.update({
+            "time": time.strftime("%H:%M"),
+             "date":time.strftime("%d/%m")
+        })
+
         return self.cached_weather
 
     async def start_periodic_updates(self):

@@ -30,8 +30,11 @@ async def startup():
     await mqtt_manager.connect()
     await mqtt_manager.publish_bulk()
     await weather_handler.fetch_weather()
-    tasks.append(asyncio.create_task(schedule_weather_updates()))
+    tasks.append(asyncio.create_task(weather_handler.start_periodic_updates()))
+    time_to_next_minute = 60 - int(time.strftime("%S"))
     tasks.append(asyncio.create_task(mqtt_manager.subscribe_to_request()))
+    await asyncio.sleep(time_to_next_minute)
+    tasks.append(asyncio.create_task(schedule_weather_updates()))
 
 @app.on_event("shutdown")
 async def shutdown():
@@ -46,9 +49,8 @@ async def shutdown():
 async def schedule_weather_updates():
     """Fetch and publish weather updates periodically."""
     while True:
-        await weather_handler.fetch_weather()
         await mqtt_manager.publish_weather(weather_handler.get_cached_weather())
-        await asyncio.sleep(300)  # Fetch weather every 5 minutes
+        await asyncio.sleep(60)  # publish weather every minute
 
 @app.get("/weather")
 async def get_weather():

@@ -93,4 +93,13 @@ void handleButtons(DisplayManager& display, ItemManager& itemManager) {
         buttonDownPressed = false;
         downLongPressActive = false;
     }
+
+    if (buttonDownPressed || buttonUpPressed) {
+        display.setLastInteractionTime(millis());
+
+        if (display.getCurrentScreen() == WEATHER_STATION) {
+            display.setCurrentScreen(PANTRY_MANAGER);
+            display.drawUI(itemManager.getSortedItems());
+        }
+    }
 }

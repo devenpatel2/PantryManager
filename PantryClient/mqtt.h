@@ -1,10 +1,12 @@
 #ifndef MQTT_H
 #define MQTT_H
 
+#include <Arduino.h>
+#include <ArduinoJson.h>
 #include <PubSubClient.h>
 
 void mqttInit();
 void mqttLoop();
-void processMqttMessage(String json);
+void processItemMessage(DynamicJsonDocument& doc);
 
 #endif

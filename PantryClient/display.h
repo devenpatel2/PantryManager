@@ -36,6 +36,7 @@ class DisplayManager {
     bool canScrollDown(int totalItems);    // Check if scrolling down is possible	
     void scrollUp();                       // Scroll up
     void scrollDown();                     // Scroll down
+    int getCurrentIndex();                 // Highlighted item index (in current sorted view)
     unsigned long getLastInteractionTime();
     void setLastInteractionTime(unsigned long interactionTime);
     ScreenState getCurrentScreen();

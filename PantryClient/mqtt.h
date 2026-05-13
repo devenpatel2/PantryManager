@@ -8,5 +8,6 @@
 void mqttInit();
 void mqttLoop();
 void processItemMessage(DynamicJsonDocument& doc);
+void publishItemUpdate(const String& name, int status);
 
 #endif

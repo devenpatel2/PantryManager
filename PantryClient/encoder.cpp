@@ -10,10 +10,17 @@ static RotaryEncoder encoder(ENCODER_CLK_PIN, ENCODER_DT_PIN, RotaryEncoder::Lat
 static long lastPosition = 0;
 static int lastSwState = HIGH;
 
+static IRAM_ATTR void encoderISR() {
+    encoder.tick();
+}
+
 void encoderInit() {
     pinMode(ENCODER_SW_PIN, INPUT);
     lastSwState = digitalRead(ENCODER_SW_PIN);
     lastPosition = encoder.getPosition();
+
+    attachInterrupt(digitalPinToInterrupt(ENCODER_CLK_PIN), encoderISR, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(ENCODER_DT_PIN), encoderISR, CHANGE);
 }
 
 static void onScrollInput(DisplayManager& display, ItemManager& itemManager) {
@@ -25,8 +32,6 @@ static void onScrollInput(DisplayManager& display, ItemManager& itemManager) {
 }
 
 void handleEncoder(DisplayManager& display, ItemManager& itemManager) {
-    encoder.tick();
-
     long pos = encoder.getPosition();
     if (pos != lastPosition) {
         long delta = pos - lastPosition;

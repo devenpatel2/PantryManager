@@ -5,6 +5,8 @@
 #include "mqtt.h"
 #include "display.h"
 #include "buttons.h"
+#include "encoder.h"
+#include "input_config.h"
 #include "itemManager.h"
 #include "weatherManager.h"
 #include "wifi_credentials.h"
@@ -33,9 +35,12 @@ void setup() {
   // Initialize Display
   displayManager.init();
 
-  // Initialize Buttons
+#ifdef INPUT_ENCODER
+  encoderInit();
+#else
   pinMode(BUTTON_UP_PIN, INPUT_PULLUP);
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
+#endif
 
   // Connect to Wi-Fi
   Serial.print("Connecting to WiFi");
@@ -52,8 +57,12 @@ void setup() {
 void loop() {
   // Handle MQTT communication
   mqttLoop();
-  // Handle button input
+  // Handle scroll input
+#ifdef INPUT_ENCODER
+  handleEncoder(displayManager, itemManager);
+#else
   handleButtons(displayManager, itemManager);
+#endif
   if (millis() - displayManager.getLastInteractionTime() > INACTIVITY_TIMEOUT && displayManager.getCurrentScreen() == PANTRY_MANAGER) {
     displayManager.setCurrentScreen(WEATHER_STATION);
     displayManager.drawWeatherScreen(weatherManager.getWeatherData());

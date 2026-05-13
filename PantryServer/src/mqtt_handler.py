@@ -9,6 +9,7 @@ MQTT_PORT = 1883
 TOPIC_ITEMS = "/pantry/items"
 TOPIC_REQUEST = "/pantry/request"
 TOPIC_WEATHER = "/pantry/weather"
+TOPIC_UPDATE = "/pantry/update"
 
 class MQTTManager:
     def __init__(self, db_manager):
@@ -42,14 +43,35 @@ class MQTTManager:
         for chunk in chunks:
             await self.publish_message(chunk)
 
-    async def subscribe_to_request(self):
-        """Subscribe to the request topic and handle bulk requests."""
+    async def subscribe_to_topics(self):
+        """Subscribe to client-originated topics and dispatch by topic."""
         await self.client.subscribe(TOPIC_REQUEST)
+        await self.client.subscribe(TOPIC_UPDATE)
         try:
             async for message in self.client.messages:
+                topic = str(message.topic)
                 data = json.loads(message.payload.decode())
-                if data.get("op") == "request":
-                    await self.publish_bulk()
+                if topic == TOPIC_REQUEST:
+                    if data.get("op") == "request":
+                        await self.publish_bulk()
+                elif topic == TOPIC_UPDATE:
+                    await self._handle_item_update(data)
         except MqttError:
             pass
-            
+
+    async def _handle_item_update(self, data):
+        """Persist a client-originated item update and rebroadcast on the items topic."""
+        if data.get("op") != "update":
+            return
+        item = data.get("item")
+        status = data.get("status")
+        if item is None or status is None:
+            return
+        self._db_manager.update_item(item, status)
+        await self.publish_message({
+            "op": "update",
+            "item": item,
+            "status": status,
+            "timestamp": int(time.time()),
+        })
+

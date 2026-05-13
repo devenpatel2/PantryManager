@@ -32,7 +32,7 @@ async def startup():
     await weather_handler.fetch_weather()
     tasks.append(asyncio.create_task(weather_handler.start_periodic_updates()))
     time_to_next_minute = 60 - int(time.strftime("%S"))
-    tasks.append(asyncio.create_task(mqtt_manager.subscribe_to_request()))
+    tasks.append(asyncio.create_task(mqtt_manager.subscribe_to_topics()))
     await asyncio.sleep(time_to_next_minute)
     tasks.append(asyncio.create_task(schedule_weather_updates()))
 

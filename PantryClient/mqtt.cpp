@@ -12,7 +12,7 @@
 #define MQTT_ITEMS_TOPIC "/pantry/items"
 #define MQTT_WEATHER_TOPIC "/pantry/weather"
 #define MQTT_REQUEST_TOPIC "/pantry/request"
-const char* mqtt_server = "pi3-wifi";
+const char* mqtt_server = "pi3-wifi.fritz.box";
 
 // MQTT Client
 WiFiClient espClient;

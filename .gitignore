@@ -13,6 +13,8 @@ out
 *.elf
 *.map
 *.bin
+PantryClient/wifi_credentials.h
+PantryClient/wokwi/
 
 # Python
 __pycache__

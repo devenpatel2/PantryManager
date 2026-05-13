@@ -7,6 +7,7 @@
 #include "buttons.h"
 #include "itemManager.h"
 #include "weatherManager.h"
+#include "wifi_credentials.h"
 // Display Configuration
 #define TFT_CS D2
 #define TFT_RST D6
@@ -14,8 +15,8 @@
 
 
 // Wi-Fi config
-const char* ssid = "xxxxxx";
-const char* password = "xxxxxxxxx";
+const char* ssid = WIFI_SSID;
+const char* password = WIFI_PASSWORD;
 
 // Pin Definitions
 #define BUTTON_UP_PIN D3
@@ -37,10 +38,13 @@ void setup() {
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
 
   // Connect to Wi-Fi
+  Serial.print("Connecting to WiFi");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
+    Serial.print(".");
   }
+  Serial.println(" connected!");
   // Setup MQTT
   mqttInit();
 }

@@ -12,6 +12,7 @@
 #define MQTT_ITEMS_TOPIC "/pantry/items"
 #define MQTT_WEATHER_TOPIC "/pantry/weather"
 #define MQTT_REQUEST_TOPIC "/pantry/request"
+#define MQTT_UPDATE_TOPIC "/pantry/update"
 const char* mqtt_server = "pi3-wifi.fritz.box";
 
 // MQTT Client
@@ -95,4 +96,16 @@ void processItemMessage(DynamicJsonDocument& doc) {
         }
     }
     displayManager.drawUI(itemManager.getSortedItems());
+}
+
+void publishItemUpdate(const String& name, int status) {
+    StaticJsonDocument<128> doc;
+    doc["op"] = "update";
+    doc["item"] = name;
+    doc["status"] = status;
+    doc["timestamp"] = (unsigned long)(millis() / 1000);
+
+    char payload[128];
+    size_t len = serializeJson(doc, payload, sizeof(payload));
+    client.publish(MQTT_UPDATE_TOPIC, (const uint8_t*)payload, len);
 }

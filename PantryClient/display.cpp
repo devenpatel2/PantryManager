@@ -117,6 +117,10 @@ void DisplayManager::scrollDown() {
     }
 }
 
+int DisplayManager::getCurrentIndex(){
+    return currentIndex;
+}
+
 unsigned long DisplayManager::getLastInteractionTime(){
     return lastInteractionTime;
 }

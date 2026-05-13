@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <RotaryEncoder.h>
 #include "encoder.h"
+#include "mqtt.h"
 
 #define ENCODER_CLK_PIN D3
 #define ENCODER_DT_PIN  D4
@@ -52,7 +53,28 @@ void handleEncoder(DisplayManager& display, ItemManager& itemManager) {
 
     int swState = digitalRead(ENCODER_SW_PIN);
     if (lastSwState == HIGH && swState == LOW) {
-        Serial.println("[encoder] select pressed");
+        static unsigned long lastPressMs = 0;
+        unsigned long now = millis();
+        if (now - lastPressMs >= 50) {
+            lastPressMs = now;
+
+            if (display.getCurrentScreen() == WEATHER_STATION) {
+                display.setCurrentScreen(PANTRY_MANAGER);
+                display.setLastInteractionTime(now);
+                display.drawUI(itemManager.getSortedItems());
+            } else {
+                auto items = itemManager.getSortedItems();
+                int idx = display.getCurrentIndex();
+                if (idx >= 0 && idx < (int)items.size()) {
+                    const String& name = items[idx].first;
+                    int newStatus = (items[idx].second + 1) % 3;
+                    itemManager.updateItem(name, newStatus);
+                    display.setLastInteractionTime(now);
+                    display.drawUI(itemManager.getSortedItems());
+                    publishItemUpdate(name, newStatus);
+                }
+            }
+        }
     }
     lastSwState = swState;
 }

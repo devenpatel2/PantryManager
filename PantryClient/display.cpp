@@ -22,19 +22,14 @@ void DisplayManager::tft_print(const String& msg, int x, int y){
 
 
 void DisplayManager::drawUI(const std::vector<std::pair<String, int>>& items) {
-    tft.fillScreen(ST7735_BLACK);  // Clear the screen
-
     int visibleCount = 0;
     for (int i = firstVisibleIndex; i < items.size() && visibleCount < maxVisibleItems; i++) {
         const auto& [name, status] = items[i];
 
-        // Highlight current item
-        if (i == currentIndex) {
-            tft.fillRect(0, visibleCount * rowHeight, screenWidth, rowHeight, ST7735_YELLOW);
-            tft.setTextColor(ST7735_BLACK);
-        } else {
-            tft.setTextColor(ST7735_CYAN);
-        }
+        bool highlighted = (i == currentIndex);
+        uint16_t bg = highlighted ? ST7735_YELLOW : ST7735_BLACK;
+        tft.fillRect(0, visibleCount * rowHeight, screenWidth, rowHeight, bg);
+        tft.setTextColor(highlighted ? ST7735_BLACK : ST7735_CYAN);
 
         tft.setCursor(5, visibleCount * rowHeight + 5);
         tft.print(name.c_str());

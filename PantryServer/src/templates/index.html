@@ -15,29 +15,31 @@
     </header>
 
     <form
-        class="flex gap-2 mb-2"
+        class="flex gap-2 mb-4"
         hx-post="/ui/items/add"
         hx-target="#item-list ul"
         hx-swap="beforeend"
         hx-on::after-request="if (event.detail.elt === this) { this.reset(); document.getElementById('suggestions').innerHTML=''; }"
         autocomplete="off"
     >
-        <input
-            name="name"
-            required
-            placeholder="Add item…"
-            autocomplete="off"
-            class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
-            hx-get="/ui/items/suggest"
-            hx-trigger="keyup changed delay:200ms, focus"
-            hx-target="#suggestions"
-            hx-swap="innerHTML"
-        >
+        <div class="flex-1 relative">
+            <input
+                name="name"
+                required
+                placeholder="Add item…"
+                autocomplete="off"
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
+                hx-get="/ui/items/suggest"
+                hx-trigger="keyup changed delay:200ms, focus"
+                hx-target="#suggestions"
+                hx-swap="innerHTML"
+            >
+            <div id="suggestions" class="absolute top-full left-0 right-0 mt-1 z-10"></div>
+        </div>
         <button class="px-4 py-2 rounded-lg bg-gray-900 text-white font-medium">
             Add
         </button>
     </form>
-    <div id="suggestions" class="mb-4"></div>
 
     <script>
         window.pickSuggestion = function(name) {
@@ -46,6 +48,14 @@
             input.focus();
             document.getElementById('suggestions').innerHTML = '';
         };
+        // Dismiss suggestions on click outside the input + dropdown
+        document.addEventListener('click', (e) => {
+            const input = document.querySelector('input[name=name]');
+            const box = document.getElementById('suggestions');
+            if (!input.contains(e.target) && !box.contains(e.target)) {
+                box.innerHTML = '';
+            }
+        });
     </script>
 
     {% include "_item_list.html" %}

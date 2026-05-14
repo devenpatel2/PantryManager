@@ -1,0 +1,17 @@
+[project]
+name = "pantry-server"
+version = "0.1.0"
+description = "PantryManager FastAPI server: MQTT bridge + SQLite + web UI"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "aiomqtt",
+    "aiohttp",
+    "pyyaml",
+    "jinja2",
+    "python-multipart",
+]
+
+[tool.uv]
+package = false

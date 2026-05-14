@@ -1,0 +1,19 @@
+# Created by Claude: systemd user unit for the PantryManager FastAPI server.
+# Install:  cp pantry-server.service ~/.config/systemd/user/
+#           systemctl --user daemon-reload
+#           systemctl --user enable --now pantry-server
+#           loginctl enable-linger dpa   # so it starts on boot without login
+[Unit]
+Description=PantryManager FastAPI server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/dpa/PantryManager/PantryServer
+ExecStart=/home/dpa/PantryManager/PantryServer/.venv/bin/uvicorn src.main:app --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

@@ -29,8 +29,9 @@ class WeatherHandler:
                 "latitude": self.latitude,
                 "longitude": self.longitude,
                 "current_weather": "True",
-                "current": ["temperature_2m", "precipitation"],
+                "current": ["temperature_2m", "precipitation", "weather_code"],
                 "hourly": ["temperature_2m", "precipitation"],
+                "daily": ["sunrise", "sunset"],
                 "timezone": "auto"
             }
             async with aiohttp.ClientSession() as session:
@@ -55,13 +56,20 @@ class WeatherHandler:
             current_weather = data.get("current_weather", {})
             current_weather_units = data.get("current_weather_units", {})
             hourly = data.get("hourly", {})
+            daily = data.get("daily", {})
+
+            sunrise_iso = (daily.get("sunrise") or [None])[0]   # e.g. "2026-05-14T05:42"
+            sunset_iso = (daily.get("sunset") or [None])[0]
 
             weather = {
                 "temperature": current_weather.get("temperature"),
+                "weather_code": current_weather.get("weathercode"),  # 0..99 WMO
                 "precipitation": hourly.get("precipitation", [None])[0],
                 "warning": None,  # Placeholder for future severe weather warnings
                 "time": time.strftime("%H:%M:%S"),
-                "date": time.strftime("%d/%m")
+                "date": time.strftime("%d/%m"),
+                "sunrise": sunrise_iso.split("T")[1] if sunrise_iso else "--:--",
+                "sunset": sunset_iso.split("T")[1] if sunset_iso else "--:--",
             }
 
             return weather

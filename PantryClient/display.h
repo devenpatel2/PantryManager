@@ -37,6 +37,7 @@ class DisplayManager {
     void scrollUp();                       // Scroll up
     void scrollDown();                     // Scroll down
     int getCurrentIndex();                 // Highlighted item index (in current sorted view)
+    void highlightItemByName(const std::vector<std::pair<String, int>>& items, const String& name);
     unsigned long getLastInteractionTime();
     void setLastInteractionTime(unsigned long interactionTime);
     ScreenState getCurrentScreen();

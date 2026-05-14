@@ -5,6 +5,10 @@
 
 #define ENCODER_CLK_PIN D3
 #define ENCODER_DT_PIN  D4
+// SW on D0 (GPIO16) needs an external 10k pull-up from SW to 3.3V:
+// GPIO16 has no internal pull-up, and KY-040 modules only pull up CLK/DT
+// (not SW). Without it, the pin floats LOW after the first press and
+// subsequent presses can't be detected.
 #define ENCODER_SW_PIN  D0
 
 static RotaryEncoder encoder(ENCODER_CLK_PIN, ENCODER_DT_PIN, RotaryEncoder::LatchMode::FOUR3);
@@ -66,11 +70,13 @@ void handleEncoder(DisplayManager& display, ItemManager& itemManager) {
                 auto items = itemManager.getSortedItems();
                 int idx = display.getCurrentIndex();
                 if (idx >= 0 && idx < (int)items.size()) {
-                    const String& name = items[idx].first;
+                    String name = items[idx].first;
                     int newStatus = (items[idx].second + 1) % 3;
                     itemManager.updateItem(name, newStatus);
+                    auto resorted = itemManager.getSortedItems();
+                    display.highlightItemByName(resorted, name);
                     display.setLastInteractionTime(now);
-                    display.drawUI(itemManager.getSortedItems());
+                    display.drawUI(resorted);
                     publishItemUpdate(name, newStatus);
                 }
             }

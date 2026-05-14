@@ -121,6 +121,20 @@ int DisplayManager::getCurrentIndex(){
     return currentIndex;
 }
 
+void DisplayManager::highlightItemByName(const std::vector<std::pair<String, int>>& items, const String& name) {
+    for (int i = 0; i < (int)items.size(); i++) {
+        if (items[i].first == name) {
+            currentIndex = i;
+            if (currentIndex < firstVisibleIndex) {
+                firstVisibleIndex = currentIndex;
+            } else if (currentIndex >= firstVisibleIndex + maxVisibleItems) {
+                firstVisibleIndex = currentIndex - maxVisibleItems + 1;
+            }
+            return;
+        }
+    }
+}
+
 unsigned long DisplayManager::getLastInteractionTime(){
     return lastInteractionTime;
 }

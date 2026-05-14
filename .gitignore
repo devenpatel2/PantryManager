@@ -18,6 +18,7 @@ PantryClient/wokwi/
 
 # Python
 __pycache__
+**/.venv/
 
 # Vim
 *.swp

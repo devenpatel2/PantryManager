@@ -26,6 +26,19 @@ class DisplayManager {
     unsigned long lastInteractionTime;
     ScreenState currentScreen;
 
+    // Weather screen helpers
+    void drawWeatherIcon(int x, int y, int wmoCode);
+    void drawSunIcon(int x, int y);
+    void drawCloudIcon(int x, int y, uint16_t color);
+    void drawPartlyCloudyIcon(int x, int y);
+    void drawRainIcon(int x, int y);
+    void drawSnowIcon(int x, int y);
+    void drawFogIcon(int x, int y);
+    void drawThunderIcon(int x, int y);
+    const char* conditionLabel(int wmoCode);
+    uint16_t conditionColor(int wmoCode);
+    uint16_t tempColor(float t);
+
   public:
     DisplayManager(uint8_t cs, uint8_t dc, uint8_t rst);
 

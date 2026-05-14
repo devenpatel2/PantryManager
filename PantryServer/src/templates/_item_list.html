@@ -1,16 +1,36 @@
 <div
     id="item-list"
-    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
     hx-get="/ui/items/list?filter={{ active_filter|default('all') }}"
     hx-trigger="every 5s"
     hx-swap="outerHTML"
 >
-    <ul class="divide-y divide-gray-100">
-    {% for row in rows %}
-        {% include "_item_row.html" %}
+    {% set chips = [
+        {"label": "All",         "value": "all",         "inactive": "border-gray-400 text-gray-700 hover:bg-gray-100",  "active": "bg-gray-900 text-white border-gray-900"},
+        {"label": "Available",   "value": "available",   "inactive": "border-green-500 text-green-700 hover:bg-green-50", "active": "bg-green-500 text-white border-green-500"},
+        {"label": "Unavailable", "value": "unavailable", "inactive": "border-red-500 text-red-700 hover:bg-red-50",       "active": "bg-red-500 text-white border-red-500"},
+        {"label": "Surplus",     "value": "surplus",     "inactive": "border-blue-500 text-blue-700 hover:bg-blue-50",    "active": "bg-blue-500 text-white border-blue-500"}
+    ] %}
+    <div class="flex flex-wrap gap-2 mb-4">
+    {% for chip in chips %}
+        <button
+            type="button"
+            class="px-3 py-2 rounded-full text-sm font-medium border-2 cursor-pointer transition-colors
+                   {% if active_filter|default('all') == chip.value %}{{ chip.active }}{% else %}{{ chip.inactive }}{% endif %}"
+            hx-get="/ui/items/list?filter={{ chip.value }}"
+            hx-target="#item-list"
+            hx-swap="outerHTML"
+        >{{ chip.label }}</button>
     {% endfor %}
-    </ul>
-    {% if rows|length == 0 %}
-    <div class="p-6 text-center text-gray-400 text-sm">No items.</div>
-    {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <ul class="divide-y divide-gray-100">
+        {% for row in rows %}
+            {% include "_item_row.html" %}
+        {% endfor %}
+        </ul>
+        {% if rows|length == 0 %}
+        <div class="p-6 text-center text-gray-400 text-sm">No items.</div>
+        {% endif %}
+    </div>
 </div>

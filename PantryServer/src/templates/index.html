@@ -6,10 +6,6 @@
     <title>Pantry</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-    <style>
-        .chip { @apply px-3 py-1 rounded-full text-sm font-medium border border-gray-300 text-gray-700; }
-        .chip.active { @apply bg-gray-900 text-white border-gray-900; }
-    </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen">
 <div class="max-w-xl mx-auto p-4">
@@ -35,17 +31,6 @@
             Add
         </button>
     </form>
-
-    <div class="flex flex-wrap gap-2 mb-4">
-        {% for label, value in [("All", "all"), ("Out", "out"), ("In", "in"), ("Surplus", "surplus")] %}
-        <button
-            class="chip {% if active_filter == value %}active{% endif %}"
-            hx-get="/ui/items/list?filter={{ value }}"
-            hx-target="#item-list"
-            hx-swap="outerHTML"
-        >{{ label }}</button>
-        {% endfor %}
-    </div>
 
     {% include "_item_list.html" %}
 

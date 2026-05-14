@@ -29,9 +29,9 @@ templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 # Sort like the board: status 1 (out) first, then alphabetical.
 def _sorted_rows(filter_status: str | None = None):
     rows = db_manager.fetch_all_with_timestamps()
-    if filter_status == "out":
+    if filter_status == "unavailable":
         rows = [r for r in rows if r[1] == 1]
-    elif filter_status == "in":
+    elif filter_status == "available":
         rows = [r for r in rows if r[1] == 0]
     elif filter_status == "surplus":
         rows = [r for r in rows if r[1] == 2]
@@ -105,7 +105,7 @@ async def ui_items_list(request: Request, filter: str = "all"):
     rows = _sorted_rows(None if filter == "all" else filter)
     return templates.TemplateResponse(
         "_item_list.html",
-        {"request": request, "rows": rows, "now": int(time.time())},
+        {"request": request, "rows": rows, "active_filter": filter, "now": int(time.time())},
     )
 
 @app.post("/ui/items/add", response_class=HTMLResponse)

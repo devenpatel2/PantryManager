@@ -1,0 +1,50 @@
+{% set name = row[0] %}
+{% set status = row[1] %}
+{% set updated_at = row[2] %}
+{% set delta = (now or 0) - updated_at %}
+{% set status_class = {
+    0: "bg-green-500",
+    1: "bg-red-500",
+    2: "bg-blue-500"
+}[status] %}
+{% set status_label = {0: "in stock", 1: "out", 2: "surplus"}[status] %}
+<li class="flex items-center gap-3 px-3 py-3">
+    <button
+        title="Cycle status (currently: {{ status_label }})"
+        aria-label="Cycle status"
+        class="w-6 h-6 rounded-full {{ status_class }} flex-shrink-0 shadow-inner"
+        hx-post="/ui/items/{{ name|urlencode }}/cycle"
+        hx-target="closest li"
+        hx-swap="outerHTML"
+    ></button>
+    <div class="flex-1 min-w-0">
+        <div class="truncate font-medium">{{ name }}</div>
+        <div class="text-xs text-gray-400">
+            {% if updated_at == 0 %}
+                —
+            {% elif delta < 60 %}
+                just now
+            {% elif delta < 3600 %}
+                {{ (delta // 60)|int }}m ago
+            {% elif delta < 86400 %}
+                {{ (delta // 3600)|int }}h ago
+            {% else %}
+                {{ (delta // 86400)|int }}d ago
+            {% endif %}
+        </div>
+    </div>
+    <button
+        title="Delete"
+        aria-label="Delete"
+        class="text-gray-400 hover:text-red-600 p-2 -m-2"
+        hx-delete="/ui/items/{{ name|urlencode }}"
+        hx-target="closest li"
+        hx-swap="outerHTML"
+        hx-confirm="Delete {{ name }}?"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+        </svg>
+    </button>
+</li>

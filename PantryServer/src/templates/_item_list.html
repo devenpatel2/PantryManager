@@ -1,0 +1,16 @@
+<div
+    id="item-list"
+    class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+    hx-get="/ui/items/list?filter={{ active_filter|default('all') }}"
+    hx-trigger="every 5s"
+    hx-swap="outerHTML"
+>
+    <ul class="divide-y divide-gray-100">
+    {% for row in rows %}
+        {% include "_item_row.html" %}
+    {% endfor %}
+    </ul>
+    {% if rows|length == 0 %}
+    <div class="p-6 text-center text-gray-400 text-sm">No items.</div>
+    {% endif %}
+</div>

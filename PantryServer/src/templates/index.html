@@ -19,7 +19,7 @@
         hx-post="/ui/items/add"
         hx-target="#item-list ul"
         hx-swap="beforeend"
-        hx-on::after-request="this.reset(); document.getElementById('suggestions').innerHTML='';"
+        hx-on::after-request="if (event.detail.elt === this) { this.reset(); document.getElementById('suggestions').innerHTML=''; }"
         autocomplete="off"
     >
         <input

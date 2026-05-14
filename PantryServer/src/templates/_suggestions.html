@@ -1,0 +1,14 @@
+{% if matches %}
+<ul class="bg-white rounded-lg shadow border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+{% for name in matches %}
+    <li
+        class="px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 flex items-center justify-between"
+        data-name="{{ name }}"
+        onclick="window.pickSuggestion(this.dataset.name)"
+    >
+        <span>{{ name }}</span>
+        <span class="text-xs text-gray-400">already in pantry</span>
+    </li>
+{% endfor %}
+</ul>
+{% endif %}

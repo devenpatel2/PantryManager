@@ -15,22 +15,38 @@
     </header>
 
     <form
-        class="flex gap-2 mb-4"
+        class="flex gap-2 mb-2"
         hx-post="/ui/items/add"
         hx-target="#item-list ul"
         hx-swap="beforeend"
-        hx-on::after-request="this.reset()"
+        hx-on::after-request="this.reset(); document.getElementById('suggestions').innerHTML='';"
+        autocomplete="off"
     >
         <input
             name="name"
             required
             placeholder="Add item…"
+            autocomplete="off"
             class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
+            hx-get="/ui/items/suggest"
+            hx-trigger="keyup changed delay:200ms, focus"
+            hx-target="#suggestions"
+            hx-swap="innerHTML"
         >
         <button class="px-4 py-2 rounded-lg bg-gray-900 text-white font-medium">
             Add
         </button>
     </form>
+    <div id="suggestions" class="mb-4"></div>
+
+    <script>
+        window.pickSuggestion = function(name) {
+            const input = document.querySelector('input[name=name]');
+            input.value = name;
+            input.focus();
+            document.getElementById('suggestions').innerHTML = '';
+        };
+    </script>
 
     {% include "_item_list.html" %}
 

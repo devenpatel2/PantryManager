@@ -113,10 +113,12 @@ async def ui_items_add(request: Request, name: str = Form(...)):
     name = name.strip()
     if not name:
         return Response(status_code=204)
+    if name in db_manager.fetch_all():
+        # Already present — don't reset its status, don't republish.
+        return Response(status_code=204)
     db_manager.update_item(name, 0)
     payload = {"op": "add", "item": name, "status": 0, "timestamp": int(time.time())}
     await mqtt_manager.publish_message(payload)
-    # Return the new row partial so HTMX can append it.
     new_row = next(
         (r for r in db_manager.fetch_all_with_timestamps() if r[0] == name), None
     )
@@ -125,6 +127,18 @@ async def ui_items_add(request: Request, name: str = Form(...)):
     return templates.TemplateResponse(
         "_item_row.html",
         {"request": request, "row": new_row, "now": int(time.time())},
+    )
+
+@app.get("/ui/items/suggest", response_class=HTMLResponse)
+async def ui_items_suggest(request: Request, name: str = ""):
+    q = name.strip().lower()
+    if not q:
+        return HTMLResponse("")
+    matches = [n for n in db_manager.fetch_all().keys() if q in n.lower()]
+    matches.sort(key=lambda s: (s.lower().find(q), s.lower()))
+    return templates.TemplateResponse(
+        "_suggestions.html",
+        {"request": request, "matches": matches[:8]},
     )
 
 @app.post("/ui/items/{name}/cycle", response_class=HTMLResponse)

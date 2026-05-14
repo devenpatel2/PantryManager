@@ -2,12 +2,16 @@
 {% set status = row[1] %}
 {% set updated_at = row[2] %}
 {% set delta = (now or 0) - updated_at %}
-{% set status_class = {
-    0: "bg-green-500",
-    1: "bg-red-500",
-    2: "bg-blue-500"
-}[status] %}
-{% set status_label = {0: "available", 1: "unavailable", 2: "surplus"}[status] %}
+{% if status == 1 %}
+    {% set status_class = "bg-red-500" %}
+    {% set status_label = "unavailable" %}
+{% elif status == 2 %}
+    {% set status_class = "bg-blue-500" %}
+    {% set status_label = "surplus" %}
+{% else %}
+    {% set status_class = "bg-green-500" %}
+    {% set status_label = "available" %}
+{% endif %}
 <li class="flex items-center gap-3 px-3 py-3">
     <button
         title="Cycle status (currently: {{ status_label }})"

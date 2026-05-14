@@ -96,16 +96,18 @@ async def handle_item(data: SingleItemMessage, background_tasks: BackgroundTasks
 async def index(request: Request, filter: str = "all"):
     rows = _sorted_rows(None if filter == "all" else filter)
     return templates.TemplateResponse(
+        request,
         "index.html",
-        {"request": request, "rows": rows, "active_filter": filter, "now": int(time.time())},
+        {"rows": rows, "active_filter": filter, "now": int(time.time())},
     )
 
 @app.get("/ui/items/list", response_class=HTMLResponse)
 async def ui_items_list(request: Request, filter: str = "all"):
     rows = _sorted_rows(None if filter == "all" else filter)
     return templates.TemplateResponse(
+        request,
         "_item_list.html",
-        {"request": request, "rows": rows, "active_filter": filter, "now": int(time.time())},
+        {"rows": rows, "active_filter": filter, "now": int(time.time())},
     )
 
 @app.post("/ui/items/add", response_class=HTMLResponse)
@@ -125,8 +127,9 @@ async def ui_items_add(request: Request, name: str = Form(...)):
     if new_row is None:
         return Response(status_code=204)
     return templates.TemplateResponse(
+        request,
         "_item_row.html",
-        {"request": request, "row": new_row, "now": int(time.time())},
+        {"row": new_row, "now": int(time.time())},
     )
 
 @app.get("/ui/items/suggest", response_class=HTMLResponse)
@@ -137,8 +140,9 @@ async def ui_items_suggest(request: Request, name: str = ""):
     matches = [n for n in db_manager.fetch_all().keys() if q in n.lower()]
     matches.sort(key=lambda s: (s.lower().find(q), s.lower()))
     return templates.TemplateResponse(
+        request,
         "_suggestions.html",
-        {"request": request, "matches": matches[:8]},
+        {"matches": matches[:8]},
     )
 
 @app.post("/ui/items/{name}/cycle", response_class=HTMLResponse)
@@ -154,8 +158,9 @@ async def ui_items_cycle(request: Request, name: str):
         (r for r in db_manager.fetch_all_with_timestamps() if r[0] == name), None
     )
     return templates.TemplateResponse(
+        request,
         "_item_row.html",
-        {"request": request, "row": updated_row, "now": int(time.time())},
+        {"row": updated_row, "now": int(time.time())},
     )
 
 @app.delete("/ui/items/{name}")

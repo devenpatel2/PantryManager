@@ -43,11 +43,6 @@ NodeMCU (ESP8266) board with:
 - ST7735 1.8" TFT (128×160) over hardware SPI
 - KY-040 rotary encoder + an **external 10 kΩ pull-up** on the SW pin (important — see hardware doc)
 
-Hardware-side docs:
-- [`docs/hardware.md`](docs/hardware.md) — pinout and wiring tables (with the SW pull-up rationale)
-- [`electronics/`](electronics/) — schematic, PCB layout, BOM, assembly notes
-- [`enclosure/`](enclosure/) — OpenSCAD source and STL exports
-
 ## One-time setup
 
 ### MQTT broker (on the Pi)

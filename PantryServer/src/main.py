@@ -35,7 +35,7 @@ def _sorted_rows(filter_status: str | None = None):
         rows = [r for r in rows if r[1] == 0]
     elif filter_status == "surplus":
         rows = [r for r in rows if r[1] == 2]
-    rows.sort(key=lambda r: (0 if r[1] == 1 else 1, r[0].lower()))
+    rows.sort(key=lambda r: r[0].lower())
     return rows
 
 @app.on_event("startup")

@@ -2,25 +2,39 @@
 {% set status = row[1] %}
 {% set updated_at = row[2] %}
 {% set delta = (now or 0) - updated_at %}
-{% if status == 1 %}
-    {% set status_class = "bg-red-500" %}
-    {% set status_label = "unavailable" %}
-{% elif status == 2 %}
-    {% set status_class = "bg-blue-500" %}
-    {% set status_label = "surplus" %}
-{% else %}
-    {% set status_class = "bg-green-500" %}
-    {% set status_label = "available" %}
-{% endif %}
 <li class="flex items-center gap-3 px-3 py-3">
-    <button
-        title="Cycle status (currently: {{ status_label }})"
-        aria-label="Cycle status"
-        class="w-6 h-6 rounded-full {{ status_class }} flex-shrink-0 shadow-inner"
-        hx-post="/ui/items/{{ name|urlencode }}/cycle"
-        hx-target="closest li"
-        hx-swap="outerHTML"
-    ></button>
+    <div class="flex gap-1 flex-shrink-0">
+        {# status 0 — available (green check) #}
+        <button
+            title="Mark as available"
+            aria-label="Mark as available"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold leading-none border-2 border-green-500 transition-colors
+                   {% if status == 0 %}bg-green-500 text-white{% else %}bg-white text-green-600 hover:bg-green-50{% endif %}"
+            hx-post="/ui/items/{{ name|urlencode }}/set/0"
+            hx-target="closest li"
+            hx-swap="outerHTML"
+        >✓</button>
+        {# status 1 — unavailable (red cross) #}
+        <button
+            title="Mark as unavailable"
+            aria-label="Mark as unavailable"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold leading-none border-2 border-red-500 transition-colors
+                   {% if status == 1 %}bg-red-500 text-white{% else %}bg-white text-red-600 hover:bg-red-50{% endif %}"
+            hx-post="/ui/items/{{ name|urlencode }}/set/1"
+            hx-target="closest li"
+            hx-swap="outerHTML"
+        >✗</button>
+        {# status 2 — surplus (blue plus) #}
+        <button
+            title="Mark as surplus"
+            aria-label="Mark as surplus"
+            class="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold leading-none border-2 border-blue-500 transition-colors
+                   {% if status == 2 %}bg-blue-500 text-white{% else %}bg-white text-blue-600 hover:bg-blue-50{% endif %}"
+            hx-post="/ui/items/{{ name|urlencode }}/set/2"
+            hx-target="closest li"
+            hx-swap="outerHTML"
+        >+</button>
+    </div>
     <div class="flex-1 min-w-0">
         <div class="truncate font-medium">{{ name }}</div>
         <div class="text-xs text-gray-400">

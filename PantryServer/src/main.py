@@ -145,15 +145,17 @@ async def ui_items_suggest(request: Request, name: str = ""):
         {"matches": matches[:8]},
     )
 
-@app.post("/ui/items/{name}/cycle", response_class=HTMLResponse)
-async def ui_items_cycle(request: Request, name: str):
+@app.post("/ui/items/{name}/set/{status}", response_class=HTMLResponse)
+async def ui_items_set(request: Request, name: str, status: int):
+    if status not in (0, 1, 2):
+        return Response(status_code=400)
     current = db_manager.fetch_all().get(name)
     if current is None:
         return Response(status_code=404)
-    new_status = (current + 1) % 3
-    db_manager.update_item(name, new_status)
-    payload = {"op": "update", "item": name, "status": new_status, "timestamp": int(time.time())}
-    await mqtt_manager.publish_message(payload)
+    if current != status:
+        db_manager.update_item(name, status)
+        payload = {"op": "update", "item": name, "status": status, "timestamp": int(time.time())}
+        await mqtt_manager.publish_message(payload)
     updated_row = next(
         (r for r in db_manager.fetch_all_with_timestamps() if r[0] == name), None
     )

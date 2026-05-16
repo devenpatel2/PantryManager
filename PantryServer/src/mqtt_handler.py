@@ -32,7 +32,6 @@ class MQTTManager:
     async def publish_message(self, payload: dict):
         """Publish a message to the MQTT topic."""
         await self.client.publish(TOPIC_ITEMS, json.dumps(payload))
-        await asyncio.sleep(0.1)
 
     async def publish_bulk(self):
         """Publish all items in the database in bulk."""
@@ -42,6 +41,7 @@ class MQTTManager:
 
         for chunk in chunks:
             await self.publish_message(chunk)
+            await asyncio.sleep(0.1)  # pace chunks so the NodeMCU isn't overwhelmed
 
     async def subscribe_to_topics(self):
         """Subscribe to client-originated topics and dispatch by topic."""

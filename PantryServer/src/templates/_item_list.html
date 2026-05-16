@@ -1,7 +1,7 @@
 <div
     id="item-list"
     hx-get="/ui/items/list?filter={{ active_filter|default('all') }}"
-    hx-trigger="every 5s"
+    hx-trigger="every 5s [window.pendingMutation === 0]"
     hx-swap="outerHTML"
 >
     {% set chips = [

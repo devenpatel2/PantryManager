@@ -111,7 +111,7 @@ async def ui_items_list(request: Request, filter: str = "all"):
     )
 
 @app.post("/ui/items/add", response_class=HTMLResponse)
-async def ui_items_add(request: Request, name: str = Form(...)):
+async def ui_items_add(request: Request, background_tasks: BackgroundTasks, name: str = Form(...)):
     name = name.strip()
     if not name:
         return Response(status_code=204)
@@ -120,7 +120,7 @@ async def ui_items_add(request: Request, name: str = Form(...)):
         return Response(status_code=204)
     db_manager.update_item(name, 0)
     payload = {"op": "add", "item": name, "status": 0, "timestamp": int(time.time())}
-    await mqtt_manager.publish_message(payload)
+    background_tasks.add_task(mqtt_manager.publish_message, payload)
     new_row = next(
         (r for r in db_manager.fetch_all_with_timestamps() if r[0] == name), None
     )
@@ -146,7 +146,7 @@ async def ui_items_suggest(request: Request, name: str = ""):
     )
 
 @app.post("/ui/items/{name}/set/{status}", response_class=HTMLResponse)
-async def ui_items_set(request: Request, name: str, status: int):
+async def ui_items_set(request: Request, name: str, status: int, background_tasks: BackgroundTasks):
     if status not in (0, 1, 2):
         return Response(status_code=400)
     current = db_manager.fetch_all().get(name)
@@ -155,7 +155,7 @@ async def ui_items_set(request: Request, name: str, status: int):
     if current != status:
         db_manager.update_item(name, status)
         payload = {"op": "update", "item": name, "status": status, "timestamp": int(time.time())}
-        await mqtt_manager.publish_message(payload)
+        background_tasks.add_task(mqtt_manager.publish_message, payload)
     updated_row = next(
         (r for r in db_manager.fetch_all_with_timestamps() if r[0] == name), None
     )

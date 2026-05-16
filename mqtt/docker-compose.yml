@@ -1,0 +1,12 @@
+# Created by Claude: Mosquitto MQTT broker for PantryManager.
+# Start:  docker compose up -d
+# Stop:   docker compose down
+# Logs:   docker logs -f mqtt_broker
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mqtt_broker
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ./config:/mosquitto/config
